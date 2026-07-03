@@ -2,7 +2,7 @@
 
 ## Current status
 
-- Current task: `TASK_009_dictionary_entity_extraction`
+- Current task: `TASK_010_numeric_extractor_and_units`
 - Status: completed
 - Last updated by: Gemma (Integrator)
 - Last updated at: 2026-07-03
@@ -23,6 +23,7 @@
 | TASK_007_text_parsers | completed | MVP text extraction for TXT, MD, PDF, DOCX, CSV, XLSX implemented |
 | TASK_008_chunking_service | completed | Deterministic sliding window chunking with persistence implemented |
 | TASK_009_dictionary_entity_extraction | completed | Dictionary-based entity extraction (Material, Process, etc.) implemented |
+| TASK_010_numeric_extractor_and_units | completed | Regex-based numeric extractor and SI unit normalizer implemented |
 
 ---
 
@@ -42,9 +43,13 @@
     - `EntityExtractionService`: Orchestrates extraction for document chunks with idempotency.
     - `EntitiesRepository`: Persistence of extracted entities tied to documents and chunks.
     - Domain dictionary supporting Material, Process, Equipment, Property, Organization, Location.
+- Numeric Extraction Service:
+    - `NumericExtractor`: Deterministic regex-based extraction of technical parameters (Temp, pH, Pressure, etc.) in RU/EN.
+    - `UnitNormalizer`: Normalizes extracted units to SI base units (e.g., Celsius $\rightarrow$ Kelvin).
+    - `NumericCondition` model: Stores raw and normalized values with traceability to chunks.
+    - `FactsRepository`: Handles persistence of numeric conditions and their links as Facts (`OPERATES_AT_CONDITION`).
 
 ### Not implemented yet
-- Numeric extraction and unit normalization.
 - Confidence scoring for facts.
 - Indexing to Elasticsearch and Neo4j.
 - LLM integration via Gateway.
@@ -55,12 +60,11 @@
 ## Changed files in latest task
 
 ```text
-backend/app/services/nlp/__init__.py
-backend/app/services/nlp/dictionaries.py
-backend/app/services/nlp/entity_extractor.py
-backend/app/services/nlp/entity_extraction_service.py
-backend/app/repositories/entities.py
-backend/tests/unit/test_entity_extractor.py
+backend/app/models/fact.py
+backend/app/services/nlp/unit_normalizer.py
+backend/app/services/nlp/numeric_extractor.py
+backend/app/repositories/facts.py
+backend/tests/unit/test_numeric_extractor.py
 ```
 
 ---
@@ -68,12 +72,13 @@ backend/tests/unit/test_entity_extractor.py
 ## Validation commands run
 
 ```bash
-python -m pytest tests/unit/test_entity_extractor.py
+cd backend
+python -m pytest tests/unit/test_numeric_extractor.py
 python -m compileall app
 ```
 
 Result:
-- `pytest`: 4 passed (covered basic extraction, alias resolution, longest match preference, and service integration).
+- `pytest`: 7 passed (covered RU/EN extraction, comma decimals, SI normalization for temperature, pressure, and velocity).
 - `compileall`: Success.
 
 ---
@@ -90,9 +95,10 @@ Result:
 ## Known issues
 
 | ID | Issue | Severity | Workaround | Target task |
-|---|---|---|---|
+|---|---|---|---|---|
 | CHUNK-01 | Overlap at end of text | Last chunk may be smaller than `chunk_size`. | N/A | Later refinement |
-| ENTITY-01 | Simple Dictionary Match | Only finds exact alias matches (no stemming/lemmatization). | Acceptable for MVP dictionary phase. | Future NLP Refinement |
+| ENTITY-01 | Simple Dictionary Match | Only finds exact alias matches. | Acceptable for MVP dictionary phase. | Future NLP Refinement |
+| NUMERIC-01 | Regex Simplicity | Complex phrasing or indirect numeric references are missed. | Deterministic regex is the requirement for MVP. | Future LLM-assisted refinement |
 
 ---
 
@@ -106,7 +112,7 @@ Result:
 
 ## Environment notes
 
-No new external dependencies added. `pytest-asyncio` used in tests.
+No new external dependencies added. `pytest` used for validation.
 
 ---
 
@@ -114,17 +120,17 @@ No new external dependencies added. `pytest-asyncio` used in tests.
 
 Recommended next task:
 ```text
-TASK_010_numeric_extractor_and_units.md
+TASK_011_confidence_service.md
 ```
 
 Read before and reuse from this task:
-- Use the same chunks produced by `ChunkingService`.
-- Entities extracted here (like `Property`) will be used as anchors for numeric extraction in the next task.
-- Follow the same idempotency pattern (delete old records before re-processing).
+- Reuse the extracted numeric conditions to calculate their contribution to fact confidence.
+- The `FactsRepository` and `NumericCondition` model are ready for use in calculating evidence scores.
+- Follow the formula defined in SDD (section 10) using extraction method and source reliability.
 
 ---
 
 ## Commit readiness
 
 - Ready to commit: yes
-- Reason: TASK_009 fully implemented and verified. Entity extraction is deterministic, aliases are supported, and integration with the repository is tested. Traceability to chunks is preserved. No secrets introduced.
+- Reason: TASK_010 fully implemented and verified. Regex extraction handles RU/EN, units are normalized to SI, and persistence logic for candidate facts is provided. No secrets introduced.
