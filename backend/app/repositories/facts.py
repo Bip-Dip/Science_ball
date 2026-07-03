@@ -67,3 +67,17 @@ class FactsRepository:
         fact = await self.create_fact(session, fact_data)
 
         return condition, fact
+
+    async def get_by_document(self, session: AsyncSession, document_id: UUID) -> List[Fact]:
+        """Retrieve all facts associated with a specific document."""
+        from sqlalchemy import select
+        stmt = select(Fact).where(Fact.source_document_id == document_id)
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
+    async def get_numeric_conditions_by_document(self, session: AsyncSession, document_id: UUID) -> List[NumericCondition]:
+        """Retrieve all numeric conditions associated with a specific document."""
+        from sqlalchemy import select
+        stmt = select(NumericCondition).where(NumericCondition.source_document_id == document_id)
+        result = await session.execute(stmt)
+        return result.scalars().all()
