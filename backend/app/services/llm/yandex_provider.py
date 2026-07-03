@@ -1,9 +1,9 @@
 import httpx
 import logging
 from typing import Optional
-from backend.app.services.llm.base import LLMProvider, LLMProviderError
-from backend.app.schemas.llm import LLMRequest, LLMResponse
-from backend.app.settings import settings
+from app.services.llm.base import LLMProvider, LLMProviderError
+from app.schemas.llm import LLMRequest, LLMResponse
+from app.settings import settings
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from backend.app.search.index_names import ESIndexNames
+from app.search.index_names import ESIndexNames
 
 def get_vector_dimension() -> int:
     # In a real scenario, this would come from settings.py

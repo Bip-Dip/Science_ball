@@ -1,10 +1,10 @@
 import logging
 from typing import Optional
-from backend.app.settings import settings
-from backend.app.services.llm.base import LLMProvider, LLMProviderError
-from backend.app.services.llm.mock_provider import MockLLMProvider
-from backend.app.services.llm.yandex_provider import YandexLLMProvider
-from backend.app.schemas.llm import LLMRequest, LLMResponse
+from app.settings import settings
+from app.services.llm.base import LLMProvider, LLMProviderError
+from app.services.llm.mock_provider import MockLLMProvider
+from app.services.llm.yandex_provider import YandexLLMProvider
+from app.schemas.llm import LLMRequest, LLMResponse
 
 logger = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
-from backend.app.services.llm.base import LLMProvider, LLMProviderError
-from backend.app.schemas.llm import LLMRequest, LLMResponse
+from app.services.llm.base import LLMProvider, LLMProviderError
+from app.schemas.llm import LLMRequest, LLMResponse
 
 
 class MockLLMProvider(LLMProvider):

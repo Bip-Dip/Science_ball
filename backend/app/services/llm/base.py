@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Optional
-from backend.app.schemas.llm import LLMRequest, LLMResponse
+from app.schemas.llm import LLMRequest, LLMResponse
 
 
 class LLMProviderError(Exception):
