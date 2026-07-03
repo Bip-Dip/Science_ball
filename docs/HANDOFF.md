@@ -2,7 +2,7 @@
 
 ## Current status
 
-- Current task: `TASK_002_docker_compose_and_settings`
+- Current task: `TASK_003_storage_clients`
 - Status: completed
 - Last updated by: Gemma (Integrator)
 - Last updated at: 2026-07-03
@@ -16,6 +16,7 @@
 | TASK_000_project_orchestration_docs | completed | TBD | Orchestration docs created |
 | TASK_001_backend_skeleton | completed | TBD | FastAPI skeleton implemented and verified |
 | TASK_002_docker_compose_and_settings | completed | TBD | Infrastructure Dockerized, env settings centralized |
+| TASK_003_storage_clients | completed | TBD | Storage client factories implemented |
 
 ---
 
@@ -28,11 +29,15 @@
 - Full MVP infrastructure in `docker-compose.yml` (Postgres, Redis, ES, Neo4j, MinIO).
 - Backend Dockerfile with multi-stage build and non-root user.
 - Centralized settings model reading from environment variables.
-- `.env.example` providing a full template for all services.
-- Git ignore configuration to prevent secret leakage.
+- Storage client factories for all backends:
+    - PostgreSQL (SQLAlchemy 2.0 Async)
+    - Redis (asyncio)
+    - Elasticsearch (AsyncElasticsearch)
+    - Neo4j (AsyncDriver)
+    - MinIO (minio-py)
+- Basic unit tests for storage clients using mocks.
 
 ### Not implemented yet
-- Storage clients implementation.
 - PostgreSQL models and Alembic migrations.
 - Document upload logic.
 - Ingestion pipeline tasks.
@@ -44,13 +49,17 @@
 ## Changed files in latest task
 
 ```text
-docker-compose.yml
-.env.example
-.gitignore
-Makefile
-backend/Dockerfile
-backend/app/settings.py
 backend/pyproject.toml
+backend/app/api/routes/health.py
+backend/app/db/__init__.py
+backend/app/db/errors.py
+backend/app/db/postgres.py
+backend/app/db/redis.py
+backend/app/db/elasticsearch.py
+backend/app/db/neo4j.py
+backend/app/db/minio.py
+backend/app/worker/celery_app.py
+backend/tests/unit/test_storage_clients.py
 ```
 
 ---
@@ -58,42 +67,33 @@ backend/pyproject.toml
 ## Validation commands run
 
 ```bash
-# Check docker compose configuration
-docker compose config
-
-# Verify backend tests still pass
 cd backend && python -m pytest
-
-# Check that .env is ignored by git
-git check-ignore -v .env
+cd backend && python -m compileall app
 ```
 
 Result:
 ```text
-docker compose config: OK (all 7 services parsed)
-pytest: 2 passed
-git check-ignore: OK (.env ignored)
+pytest: 21 passed (including all storage client tests)
+compileall: Success (no errors)
 ```
 
 ---
 
-## Docker Services & Env Vars
+## Storage Clients & Dependencies
 
-### Added Services
-- `backend`: FastAPI application.
-- `worker`: Celery worker placeholder.
-- `postgres`: Database for transactional data.
-- `redis`: Cache and message broker.
-- `elasticsearch`: Full-text and vector search.
-- `neo4j`: Knowledge graph.
-- `minio`: Object storage for documents.
+### Client Modules
+- `app.db.postgres`: Async engine and session factory.
+- `app.db.redis`: Async Redis client.
+- `app.db.elasticsearch`: Async ES client.
+- `app.db.neo4j`: Async Neo4j driver.
+- `app.db.minio`: MinIO client.
+- `app.db.errors`: Base storage exceptions.
 
-### Key Environment Groups added to settings.py / .env.example
-- **App**: APP_NAME, DEBUG, BACKEND_PORT.
-- **Infrastructure**: DATABASE_URL, REDIS_URL, ELASTICSEARCH_URL, NEO4J_URI, MINIO_ENDPOINT.
-- **YandexGPT**: YANDEX_API_KEY, YANDEX_FOLDER_ID, model settings and endpoints.
-- **LLM Common**: Temperature, tokens, timeouts, retries.
-- **Local LLM**: LOCAL_LLM_ENDPOINT, LOCAL_LLM_MODEL (Ollama fallback).
+### Added Dependencies
+- `sqlalchemy[asyncio]`, `asyncpg` (Postgres)
+- `elasticsearch[async]` (Elasticsearch)
+- `neo4j` (Neo4j)
+- `minio` (MinIO)
 
 ---
 
@@ -101,8 +101,9 @@ git check-ignore: OK (.env ignored)
 
 | Area | Stub/mock | Reason | Removal task |
 |---|---|---|---|
-| Dependencies | `backend/app/dependencies.py` is empty | Skeleton phase; real deps in later tasks | TASK_003/TASK_004 |
+| Dependencies | `backend/app/dependencies.py` is empty | Skeleton phase; real deps in later tasks | TASK_004+ |
 | Worker | `worker` service in compose | Placeholder for Celery runtime; no tasks yet | TASK_005+ |
+| Storage | Client factories are lazy | No live connections required to import app | N/A (by design) |
 
 ---
 
@@ -141,19 +142,19 @@ Never commit:
 Recommended next task:
 
 ```text
-TASK_003_storage_clients.md
+TASK_004_postgres_models_and_alembic.md
 ```
 
 Read before starting:
 - `docs/SDD.md`
 - `docs/AI_RULES.md`
 - `docs/HANDOFF.md`
-- `docs/tasks/TASK_003_storage_clients.md`
+- `docs/tasks/TASK_004_postgres_models_and_alembic.md`
 
 ---
 
 ## Commit readiness
 
 - Ready to commit: yes
-- Reason: TASK_002 fully implemented and verified. Docker config is valid, .env is ignored, no secrets leaked in example files. All boundaries respected.
+- Reason: TASK_003 fully implemented and verified. Clients are lazy, tests pass using mocks, no secrets hardcoded, boundaries respected.
 - Required before commit: none
