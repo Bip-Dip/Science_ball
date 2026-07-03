@@ -13,6 +13,9 @@ from app.repositories.entities import EntitiesRepository
 from app.repositories.facts import FactsRepository
 from app.search.indexing_service import IndexingService
 from app.services.ingestion.indexing_step import IndexingStep
+from app.services.ingestion.graph_step import GraphStep
+from app.graph.graph_writer import GraphWriter
+
 
 # Setup synchronous DB connection for the Celery worker
 sync_engine = create_engine(settings.database_url.replace("postgresql+asyncpg", "postgresql"))
@@ -51,7 +54,7 @@ def process_document_ingestion(self, job_id: str):
             ("Parsing text...", 0.25),
             ("Extracting entities...", 0.50),
             ("Normalizing units...", 0.75),
-            ("Indexing to ES/Neo4j...", 1.0),
+            ("Indexing to ES & Neo4j...", 1.0),
         ]
 
         for description, progress in steps:
