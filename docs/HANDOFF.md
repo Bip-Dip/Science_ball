@@ -2,7 +2,7 @@
 
 ## Current status
 
-- Current task: `TASK_003_storage_clients`
+- Current task: `TASK_004_postgres_models_and_alembic`
 - Status: completed
 - Last updated by: Gemma (Integrator)
 - Last updated at: 2026-07-03
@@ -17,6 +17,7 @@
 | TASK_001_backend_skeleton | completed | TBD | FastAPI skeleton implemented and verified |
 | TASK_002_docker_compose_and_settings | completed | TBD | Infrastructure Dockerized, env settings centralized |
 | TASK_003_storage_clients | completed | TBD | Storage client factories implemented |
+| TASK_004_postgres_models_and_alembic | completed | TBD | SQLAlchemy models and Alembic migrations setup |
 
 ---
 
@@ -29,18 +30,19 @@
 - Full MVP infrastructure in `docker-compose.yml` (Postgres, Redis, ES, Neo4j, MinIO).
 - Backend Dockerfile with multi-stage build and non-root user.
 - Centralized settings model reading from environment variables.
-- Storage client factories for all backends:
-    - PostgreSQL (SQLAlchemy 2.0 Async)
-    - Redis (asyncio)
-    - Elasticsearch (AsyncElasticsearch)
-    - Neo4j (AsyncDriver)
-    - MinIO (minio-py)
-- Basic unit tests for storage clients using mocks.
+- Storage client factories for all backends (Lazy loading).
+- SQLAlchemy 2.0 Core Models for MVP:
+    - `documents` (access_level, MinIO links)
+    - `chunks` (traceability, access_level)
+    - `entities` (extracted entities, aliases)
+    - `facts` & `fact_versions` (knowledge units, traceability, confidence)
+    - `ingestion_jobs` (pipeline tracking)
+    - `audit_log` (immutable audit trail)
+- Alembic migration framework configured with initial revision.
 
 ### Not implemented yet
-- PostgreSQL models and Alembic migrations.
-- Document upload logic.
-- Ingestion pipeline tasks.
+- Document upload logic and MinIO integration.
+- Ingestion pipeline implementation.
 - NLP/search/graph/LLM business logic.
 - Frontend.
 
@@ -50,16 +52,19 @@
 
 ```text
 backend/pyproject.toml
-backend/app/api/routes/health.py
-backend/app/db/__init__.py
-backend/app/db/errors.py
-backend/app/db/postgres.py
-backend/app/db/redis.py
-backend/app/db/elasticsearch.py
-backend/app/db/neo4j.py
-backend/app/db/minio.py
-backend/app/worker/celery_app.py
-backend/tests/unit/test_storage_clients.py
+backend/alembic.ini
+backend/alembic/env.py
+backend/alembic/script.py.mako
+backend/alembic/versions/26fb8bfa9ca6_initial_core_tables.py
+backend/app/models/__init__.py
+backend/app/models/base.py
+backend/app/models/document.py
+backend/app/models/chunk.py
+backend/app/models/entity.py
+backend/app/models/fact.py
+backend/app/models/ingestion_job.py
+backend/app/models/audit_log.py
+backend/tests/unit/test_models.py
 ```
 
 ---
@@ -73,27 +78,26 @@ cd backend && python -m compileall app
 
 Result:
 ```text
-pytest: 21 passed (including all storage client tests)
+pytest: 63 passed (including model and migration tests)
 compileall: Success (no errors)
 ```
 
 ---
 
-## Storage Clients & Dependencies
+## Database Schema & Migrations
 
-### Client Modules
-- `app.db.postgres`: Async engine and session factory.
-- `app.db.redis`: Async Redis client.
-- `app.db.elasticsearch`: Async ES client.
-- `app.db.neo4j`: Async Neo4j driver.
-- `app.db.minio`: MinIO client.
-- `app.db.errors`: Base storage exceptions.
+### Migration Revision
+- ID: `26fb8bfa9ca6`
+- Title: `initial_core_tables`
 
-### Added Dependencies
-- `sqlalchemy[asyncio]`, `asyncpg` (Postgres)
-- `elasticsearch[async]` (Elasticsearch)
-- `neo4j` (Neo4j)
-- `minio` (MinIO)
+### Tables Created
+- `documents`: Metadata, checksums and access levels.
+- `chunks`: Document segments with traceability.
+- `entities`: Extracted named entities.
+- `facts`: Knowledge units with confidence and source tracing.
+- `fact_versions`: Versioning for facts via JSONB payload.
+- `ingestion_jobs`: Tracking of ingestion pipeline state.
+- `audit_log`: Immutable user action log.
 
 ---
 
@@ -101,9 +105,9 @@ compileall: Success (no errors)
 
 | Area | Stub/mock | Reason | Removal task |
 |---|---|---|---|
-| Dependencies | `backend/app/dependencies.py` is empty | Skeleton phase; real deps in later tasks | TASK_004+ |
+| Dependencies | `backend/app/dependencies.py` is empty | Skeleton phase; real deps in later tasks | TASK_005+ |
 | Worker | `worker` service in compose | Placeholder for Celery runtime; no tasks yet | TASK_005+ |
-| Storage | Client factories are lazy | No live connections required to import app | N/A (by design) |
+| RBAC | user_id / created_by fields | Nullable UUIDs without FK (Users table pending) | Task: Auth/RBAC implementation |
 
 ---
 
@@ -121,7 +125,7 @@ compileall: Success (no errors)
 |---|---|---|---|
 | OQ-001 | SDD contains duplicated/garbled fragments in some sections. | Treat clean bullet lists and code blocks as intended source. Do not edit SDD. | Pending |
 | OQ-002 | Exact upload size limits are not specified. | Use conservative configurable defaults in settings. | Pending |
-| OQ-003 | Auth/RBAC depth for early MVP is not fully specified. | Start with `access_level` fields and later add real auth/RBAC. | Pending |
+| OQ-003 | Auth/RBAC depth for early MVP is not specified. | Start with `access_level` fields and later add real auth/RBAC. | Pending |
 
 ---
 
@@ -142,19 +146,19 @@ Never commit:
 Recommended next task:
 
 ```text
-TASK_004_postgres_models_and_alembic.md
+TASK_005_document_upload_minio.md
 ```
 
 Read before starting:
 - `docs/SDD.md`
 - `docs/AI_RULES.md`
 - `docs/HANDOFF.md`
-- `docs/tasks/TASK_004_postgres_models_and_alembic.md`
+- `docs/tasks/TASK_005_document_upload_minio.md`
 
 ---
 
 ## Commit readiness
 
 - Ready to commit: yes
-- Reason: TASK_003 fully implemented and verified. Clients are lazy, tests pass using mocks, no secrets hardcoded, boundaries respected.
+- Reason: TASK_004 fully implemented and verified. Models strictly follow SDD requirements (traceability, access levels). Alembic is configured and initial migration is present. No business logic leaked.
 - Required before commit: none
