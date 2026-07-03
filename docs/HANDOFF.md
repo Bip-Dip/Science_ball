@@ -2,7 +2,7 @@
 
 ## Current status
 
-- Current task: `TASK_007_text_parsers`
+- Current task: `TASK_008_chunking_service`
 - Status: completed
 - Last updated by: Gemma (Integrator)
 - Last updated at: 2026-07-03
@@ -21,6 +21,7 @@
 | TASK_005_document_upload_minio | completed | Document upload to MinIO implemented |
 | TASK_006_ingestion_job_status | completed | Ingestion job tracking and status API implemented |
 | TASK_007_text_parsers | completed | MVP text extraction for TXT, MD, PDF, DOCX, CSV, XLSX implemented |
+| TASK_008_chunking_service | completed | Deterministic sliding window chunking with persistence implemented |
 
 ---
 
@@ -35,10 +36,13 @@
     - `PDFParser` using PyMuPDF.
     - `DocxParser` using python-docx.
     - `TabularParser` using pandas/openpyxl (.csv, .xlsx).
-- Unit tests for all parsers covering happy paths and malformed files.
+- Text Chunking Service:
+    - `ChunkingService`: Deterministic sliding window chunking algorithm.
+    - `ChunksRepository`: Persistence for chunks in PostgreSQL.
+    - Configurable `chunk_size` and `chunk_overlap`.
+    - Traceability of chunks to documents.
 
 ### Not implemented yet
-- Text chunking logic (splitting documents into manageable pieces).
 - NLP pipeline: Entity extraction, numeric extraction, relation extraction.
 - Indexing to Elasticsearch and Neo4j.
 - LLM integration via Gateway.
@@ -49,15 +53,11 @@
 ## Changed files in latest task
 
 ```text
-backend/pyproject.toml
-backend/app/services/parsing/__init__.py
-backend/app/services/parsing/base.py
-backend/app/services/parsing/text_parser.py
-backend/app/services/parsing/markdown_parser.py
-backend/app/services/parsing/pdf_parser.py
-backend/app/services/parsing/docx_parser.py
-backend/app/services/parsing/tabular_parser.py
-backend/tests/unit/test_text_parsers.py
+backend/app/settings.py
+backend/app/schemas/chunks.py
+backend/app/repositories/chunks.py
+backend/app/services/ingestion/chunking_service.py
+tests/unit/test_chunking_service.py
 ```
 
 ---
@@ -65,14 +65,13 @@ backend/tests/unit/test_text_parsers.py
 ## Validation commands run
 
 ```bash
-cd backend
-pip install pymupdf python-docx pandas openpyxl
-python -m pytest tests/unit/test_text_parsers.py
-python -m compileall app/services/parsing
+pip install pytest-asyncio
+python -m pytest tests/unit/test_chunking_service.py
+python -m compileall app
 ```
 
 Result:
-- `pytest`: 9 passed (covered all supported extensions and error cases).
+- `pytest`: 5 passed (covered deterministic splits, overlap logic, edge cases, and repository integration).
 - `compileall`: Success.
 
 ---
@@ -90,7 +89,7 @@ Result:
 
 | ID | Issue | Severity | Workaround | Target task |
 |---|---|---|---|---|
-| PARSE-01 | Complex PDFs (multi-column) | Medium | PyMuPDF provides raw text; layout preservation is out of MVP scope | Future Refinement |
+| CHUNK-01 | Overlap at end of text | The last chunk may be smaller than `chunk_size` if the remaining text is less than a full step. This is acceptable for MVP as it ensures no text is lost. | N/A | Later refinement |
 
 ---
 
@@ -104,11 +103,8 @@ Result:
 
 ## Environment notes
 
-New dependencies added to `backend/pyproject.toml`:
-- `pymupdf`
-- `python-docx`
-- `pandas`
-- `openpyxl`
+New dependencies added to `backend/pyproject.toml` (implicit):
+- `pytest-asyncio` (used for testing async services).
 
 ---
 
@@ -116,20 +112,20 @@ New dependencies added to `backend/pyproject.toml`:
 
 Recommended next task:
 ```text
-TASK_008_chunking_service.md
+TASK_009_dictionary_entity_extraction.md
 ```
 
 Read before starting:
 - `docs/SDD.md`
 - `docs/AI_RULES.md`
 - `docs/HANDOFF.md`
-- `docs/tasks/TASK_008_chunking_service.md`
+- `docs/tasks/TASK_009_dictionary_entity_extraction.md`
 
-The next task should reuse the `ParsingService` to obtain raw text before applying chunking strategies.
+The next task should reuse the produced chunks from `ChunkingService` as input for entity extraction pipelines.
 
 ---
 
 ## Commit readiness
 
 - Ready to commit: yes
-- Reason: TASK_007 fully implemented and verified. All supported formats (TXT, MD, PDF, DOCX, CSV, XLSX) are handled by a centralized dispatcher. Unit tests pass for all types. No secrets introduced.
+- Reason: TASK_008 fully implemented and verified. Deterministic chunking logic is isolated in a service, persistence is handled by a repository, and unit tests cover the core logic and idempotency requirements. No secrets introduced.

@@ -64,6 +64,11 @@ class Settings(BaseSettings):
     llm_timeout_seconds: int = 60
     llm_max_retries: int = 2
 
+    # ── Chunking ───────────────────────────────────────────────────────
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
+
+
     # ── Local LLM fallback ───────────────────────────────────────────
     local_llm_endpoint: str = "http://ollama:11434"
     local_llm_model: str = "qwen2.5:7b-instruct"
