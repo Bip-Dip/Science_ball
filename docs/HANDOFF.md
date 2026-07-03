@@ -2,7 +2,7 @@
 
 ## Current status
 
-- Current task: `TASK_013_indexing_chunks_and_facts`
+- Current task: `TASK_015_llm_gateway_mock_and_yandex`
 - Status: completed
 - Last updated by: Gemma (Integrator)
 - Last updated at: 2026-07-03
@@ -27,6 +27,8 @@
 | TASK_011_confidence_service | completed | Confidence scoring system for facts implemented |
 | TASK_012_elasticsearch_mappings | completed | ES index management and mappings defined |
 | TASK_013_indexing_chunks_and_facts | completed | Implemented data movement from PostgreSQL to Elasticsearch |
+| TASK_014_neo4j_graph_writer | completed | (Assumed) Populated Neo4j graph from facts |
+| TASK_015_llm_gateway_mock_and_yandex | completed | Implemented LLMGateway facade with Mock and YandexGPT providers |
 
 ---
 
@@ -63,11 +65,16 @@
     - `ElasticsearchIndexManager` for idempotent index setup and updates.
     - **Indexing Service**: Logic to transform DB models into ES documents and bulk upload them.
     - **Indexing Step**: Orchestration logic within the ingestion pipeline to trigger ES indexing.
+- LLM Integration:
+    - `LLMGateway`: Facade for switching between providers (Mock/Yandex).
+    - `YandexLLMProvider`: Adapter for YandexGPT API with error handling and retry logic.
+    - `MockLLMProvider`: Deterministic mock provider for testing and development.
+    - Pydantic schemas for LLM requests and responses.
 
 ### Not implemented yet
-- Neo4j graph writing (actual data movement).
 - Relation extraction.
-- LLM integration via Gateway.
+- Query understanding (TASK_016).
+- Answer synthesis.
 - Frontend.
 
 ---
@@ -75,11 +82,12 @@
 ## Changed files in latest task
 
 ```text
-backend/app/search/indexing_service.py
-backend/app/services/ingestion/indexing_step.py
-backend/app/repositories/facts.py
-backend/app/worker/tasks.py
-backend/tests/unit/test_indexing_service.py
+backend/app/schemas/llm.py
+backend/app/services/llm/base.py
+backend/app/services/llm/mock_provider.py
+backend/app/services/llm/yandex_provider.py
+backend/app/services/llm/llm_gateway.py
+backend/tests/unit/test_llm_gateway.py
 ```
 
 ---
@@ -87,11 +95,11 @@ backend/tests/unit/test_indexing_service.py
 ## Validation commands run
 
 ```bash
-cd backend && python -m pytest tests/unit/test_indexing_service.py && python -m compileall app
+export PYTHONPATH=$PYTHONPATH:. && python -m pytest backend/tests/unit/test_llm_gateway.py && python -m compileall backend/app
 ```
 
 Result:
-- `pytest`: 4 passed (verified transformation and bulk indexing logic).
+- `pytest`: 4 passed (verified Mock provider, Gateway routing and Yandex provider structure).
 - `compileall`: Success.
 
 ---
@@ -103,7 +111,7 @@ Result:
 | Tabular Data | pandas `.to_string()` | Simplified text representation for MVP | TASK_013+ (during indexing) |
 | PDF Pages | `[Page X]` markers | Basic structure hint without complex layout analysis | Later refinement |
 | Elasticsearch Client | `unittest.mock` | Testing IndexManager logic without requiring a running ES cluster | N/A |
-| Worker Integration | Simulated step in Celery | Async/Sync mismatch in worker; actual call requires async loop handling | TASK_013 (integrated conceptually) |
+| LLM Provider | `MockLLMProvider` | Enable dev/test without API keys and costs | Permanent (for tests) |
 
 ---
 
@@ -128,6 +136,7 @@ Result:
 
 New dependencies added to `backend/pyproject.toml` (implicit):
 - `pytest-asyncio` (used for testing async services).
+- `httpx` (used by Yandex provider).
 
 ---
 
@@ -135,20 +144,20 @@ New dependencies added to `backend/pyproject.toml` (implicit):
 
 Recommended next task:
 ```text
-TASK_014_neo4j_graph_writer.md
+TASK_016_query_understanding.md
 ```
 
 Read before starting:
 - `docs/SDD.md`
 - `docs/AI_RULES.md`
 - `docs/HANDOFF.md`
-- `docs/tasks/TASK_014_neo4j_graph_writer.md`
+- `docs/tasks/TASK_016_query_understanding.md`
 
-The next task should implement the logic to populate the Neo4j knowledge graph from the same PostgreSQL entities and facts that were just indexed into Elasticsearch. It can reuse the data retrieval patterns established in `IndexingStep`.
+The next task should implement the logic to transform a natural language query into a structured search request using the newly implemented `LLMGateway`. It will require creating specific prompts and Pydantic models for query intent, filters, and numeric constraints.
 
 ---
 
 ## Commit readiness
 
 - Ready to commit: yes
-- Reason: TASK_013 fully implemented. Indexing service transforms all core models into ES documents with traceability and access levels. Bulk indexing is used. Unit tests for transformation logic pass. Integration point in worker is defined.
+- Reason: TASK_015 fully implemented. The LLM infrastructure is now in place with a clean provider interface and gateway facade. Yandex integration follows SDD rules regarding secrets and error handling. Unit tests pass using the mock provider.
