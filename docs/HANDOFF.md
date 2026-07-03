@@ -2,7 +2,7 @@
 
 ## Current status
 
-- Current task: `TASK_008_chunking_service`
+- Current task: `TASK_009_dictionary_entity_extraction`
 - Status: completed
 - Last updated by: Gemma (Integrator)
 - Last updated at: 2026-07-03
@@ -22,6 +22,7 @@
 | TASK_006_ingestion_job_status | completed | Ingestion job tracking and status API implemented |
 | TASK_007_text_parsers | completed | MVP text extraction for TXT, MD, PDF, DOCX, CSV, XLSX implemented |
 | TASK_008_chunking_service | completed | Deterministic sliding window chunking with persistence implemented |
+| TASK_009_dictionary_entity_extraction | completed | Dictionary-based entity extraction pipeline implemented |
 
 ---
 
@@ -41,9 +42,16 @@
     - `ChunksRepository`: Persistence for chunks in PostgreSQL.
     - Configurable `chunk_size` and `chunk_overlap`.
     - Traceability of chunks to documents.
+- NLP Pipeline (MVP):
+    - Dictionary-based Entity Extraction:
+        - Domain dictionaries for Materials, Processes, Equipment, Properties, Organizations, Locations.
+        - Alias resolution and "longest-match-first" extraction logic.
+        - `EntityExtractionService` orchestrating the process with idempotency (deleting old entities before re-extraction).
+        - `EntitiesRepository` for persisting extracted entities in PostgreSQL.
 
 ### Not implemented yet
-- NLP pipeline: Entity extraction, numeric extraction, relation extraction.
+- Numeric extractor and units handling.
+- Relation extraction.
 - Indexing to Elasticsearch and Neo4j.
 - LLM integration via Gateway.
 - Frontend.
@@ -53,11 +61,12 @@
 ## Changed files in latest task
 
 ```text
-backend/app/settings.py
-backend/app/schemas/chunks.py
-backend/app/repositories/chunks.py
-backend/app/services/ingestion/chunking_service.py
-tests/unit/test_chunking_service.py
+backend/app/services/nlp/__init__.py
+backend/app/services/nlp/dictionaries.py
+backend/app/services/nlp/entity_extractor.py
+backend/app/services/nlp/entity_extraction_service.py
+backend/app/repositories/entities.py
+backend/tests/unit/test_entity_extractor.py
 ```
 
 ---
@@ -65,13 +74,13 @@ tests/unit/test_chunking_service.py
 ## Validation commands run
 
 ```bash
-pip install pytest-asyncio
-python -m pytest tests/unit/test_chunking_service.py
+cd backend
+python -m pytest tests/unit/test_entity_extractor.py
 python -m compileall app
 ```
 
 Result:
-- `pytest`: 5 passed (covered deterministic splits, overlap logic, edge cases, and repository integration).
+- `pytest`: 4 passed (covered basic extraction, alias resolution, longest-match priority, and service integration).
 - `compileall`: Success.
 
 ---
@@ -112,20 +121,20 @@ New dependencies added to `backend/pyproject.toml` (implicit):
 
 Recommended next task:
 ```text
-TASK_009_dictionary_entity_extraction.md
+TASK_010_numeric_extractor_and_units.md
 ```
 
 Read before starting:
 - `docs/SDD.md`
 - `docs/AI_RULES.md`
 - `docs/HANDOFF.md`
-- `docs/tasks/TASK_009_dictionary_entity_extraction.md`
+- `docs/tasks/TASK_010_numeric_extractor_and_units.md`
 
-The next task should reuse the produced chunks from `ChunkingService` as input for entity extraction pipelines.
+The next task should reuse the entities extracted in TASK_009 and implement a specialized extractor for numeric values and their associated units, which are critical for technical knowledge maps.
 
 ---
 
 ## Commit readiness
 
 - Ready to commit: yes
-- Reason: TASK_008 fully implemented and verified. Deterministic chunking logic is isolated in a service, persistence is handled by a repository, and unit tests cover the core logic and idempotency requirements. No secrets introduced.
+- Reason: TASK_009 fully implemented and verified. The dictionary extraction logic is isolated, supports alias resolution, handles longest-match priority, and is integrated into the ingestion pipeline via a service layer. No secrets introduced.
