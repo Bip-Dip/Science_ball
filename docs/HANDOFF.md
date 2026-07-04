@@ -1,22 +1,22 @@
-- TASK_016_query_understanding completed;
+- TASK_017_search_api_basic completed;
 - implemented behavior: 
-    - Structured Search Intent schema (Pydantic) for precise search filtering;
-    - QueryUnderstandingService that converts NL queries into validated intent using LLMGateway;
-    - Deterministic fallback mechanism to ensure basic search functionality when LLM fails/is disabled;
-    - Prompt management via external markdown files in `backend/app/prompts/`;
-    - Validation of LLM output including handling of markdown JSON blocks;
+    - Basic Search API endpoint `POST /api/v1/search` providing ranked evidence with document metadata;
+    - Elasticsearch query builder translating `QueryIntent` to DSL with mandatory `access_level` filtering;
+    - Search service orchestrating the flow from NL query understanding to results enrichment;
+    - Full traceability of search results back to chunks and documents;
 - changed files:
-    - `backend/app/schemas/query.py` (New)
-    - `backend/app/services/query/__init__.py` (New)
-    - `backend/app/services/query/query_understanding.py` (New)
-    - `backend/app/prompts/query_understanding.ru.md` (New)
-    - `backend/app/prompts/query_understanding.en.md` (New)
-    - `backend/tests/unit/test_query_understanding.py` (New)
+    - `backend/app/schemas/search.py` (New)
+    - `backend/app/search/query_builder.py` (New)
+    - `backend/app/search/search_service.py` (New)
+    - `backend/app/api/routes/search.py` (New)
+    - `backend/app/api/router.py` (Updated)
+    - `backend/tests/unit/test_search_query_builder.py` (New)
+    - `backend/tests/unit/test_search_api.py` (New)
 - validation commands and results:
-    - `export PYTHONPATH=$PYTHONPATH:$(pwd) && cd backend && python -m pytest tests/unit/test_query_understanding.py`: 4 passed;
-    - `python -m compileall app`: success;
-- runtime/startup notes: none;
-- stubs/placeholders intentionally left: prompt templates are basic and may be refined as the search API is implemented;
+    - `python -m pytest tests/unit/test_search_query_builder.py`: 5 passed;
+    - `python -m pytest tests/unit/test_search_api.py`: 2 passed;
+- runtime/startup notes: search depends on Elasticsearch indices `rd_chunks_v1` and `rd_docs_v1` being present.
+- stubs/placeholders intentionally left: user identity is currently mocked as a list of levels `["public", "internal"]` in the route; this should be integrated with JWT auth.
 - known issues: none;
-- exact next task: `TASK_017_search_api_basic.md`;
-- what the next task should reuse from this task: use `query_understanding_service.understand_query` to transform incoming HTTP request queries into structured search intents before building ES/Neo4j queries.
+- exact next task: `TASK_018_answer_synthesis_with_evidence.md`;
+- what the next task should reuse from this task: use the search result set (chunks and metadata) as the ground truth evidence for LLM answer synthesis.
