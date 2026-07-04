@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrainCircuit, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AnswerResponse } from '../../../api/answers';
+import ExportButton from '../../answers/ExportButton';
 
 interface AnswerPanelProps {
   answer: AnswerResponse | null;
@@ -30,9 +31,12 @@ export default function AnswerPanel({ answer, isLoading }: AnswerPanelProps) {
     <div className="space-y-8 h-full overflow-y-auto pr-2">
       {/* Summary Section */}
       <section>
-        <div className="flex items-center gap-2 mb-3 text-slate-900 font-bold text-lg">
-          <BrainCircuit className="w-5 h-5 text-blue-600" />
-          Grounded Answer
+        <div className="flex items-center justify-between mb-3 text-slate-900 font-bold text-lg">
+          <div className="flex items-center gap-2">
+            <BrainCircuit className="w-5 h-5 text-blue-600" />
+            Grounded Answer
+          </div>
+          <ExportButton answer={answer} />
         </div>
         <div className="p-5 bg-white rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
           <div
@@ -110,7 +114,6 @@ export default function AnswerPanel({ answer, isLoading }: AnswerPanelProps) {
   );
 }
 
-// Simple replacement for Info icon since Lucide's Info is named Info
 function InfoIcon(props: any) {
-  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 2-2"/></svg>;
+  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 2-s2" /></svg>;
 }

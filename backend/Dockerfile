@@ -21,7 +21,17 @@ RUN pip install --no-cache-dir \
     "uvicorn[standard]>=0.29,<1.0" \
     "pydantic-settings>=2.2,<3.0" \
     "celery>=5.3,<6.0" \
-    "redis>=5.0,<6.0"
+    "redis>=5.0,<6.0" \
+    "sqlalchemy[asyncio]>=2.0,<3.0" \
+    "asyncpg>=0.29,<1.0" \
+    "elasticsearch[async]>=8.12,<9.0" \
+    "neo4j>=5.18,<6.0" \
+    "minio>=7.2,<8.0" \
+    "pymupdf>=1.24,<2.0" \
+    "python-docx>=1.1,<2.0" \
+    "pandas>=2.2,<3.0" \
+    "openpyxl>=3.1,<4.0" \
+    "python-multipart>=0.0.9"
 
 # Copy application code
 COPY app/ ./app/

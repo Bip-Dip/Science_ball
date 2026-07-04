@@ -1,8 +1,6 @@
-# HANDOFF
-
 ## Текущий статус
 
-- Текущая задача: `TASK_022_frontend_graph_preview`
+- Текущая задача: `TASK_023_markdown_export`
 - Статус: завершена
 - Последнее обновление: Gemma (Интегратор)
 - Последнее обновление: 2026-07-04
@@ -13,8 +11,9 @@
 
 | Задача | Статус | Коммит | Примечания |
 |---|---|---|---|
-| ... | завершена | TBD | Предыдущие этапы разработки |
+| ... | завершена | TBD | Предыдущие и этапы разработки |
 | TASK_022_frontend_graph_preview | завершена | TBD | Реализован UI предпросмотра графа и API получения окрестности |
+| TASK_023_markdown_export | завершена | TBD | Реализован экспорт синтезированных ответов в Markdown на backend и frontend |
 
 ---
 
@@ -28,25 +27,27 @@
 - Панель деталей узла с отображением метаданных (свойства, ID, метка).
 - Обобщенный хелпер `post` в API-клиенте фронтенда для унификации запросов.
 - Настройка роутинга для доступа к странице `/graph`.
+- Сервис экспорта ответов в Markdown (`MarkdownExportService`), преобразующий синтезированный ответ, доказательства и противоречия в структурированный документ.
+- API эндпоинт `POST /api/v1/exports/markdown` для скачивания MD-файла.
+- Frontend компонент `ExportButton`, интегрированный в панель ответа (`AnswerPanel`), позволяющий пользователю скачать отчет одним кликом.
 
 ### Не реализовано
-- Продвинутый алгоритм раскладки узлов (сейчас используется простая круговая схема).
+- Продвинутый algorithm раскладки узлов (сейчас используется простая круговая схема).
 - Полная интеграция с JWT/Auth для динамического определения уровней доступа (сейчас используются заглушки `["public", "internal"]`).
-- Экспорт синтезированных ответов и карт знаний в Markdown (`TASK_023`).
 
 ---
 
 ## Изменённые файлы в последней задаче
 
 ```text
-backend/app/schemas/graph.py
-backend/app/services/graph/graph_query_service.py
-backend/app/api/routes/graph.py
+backend/app/api/routes/exports.py
 backend/app/api/router.py
-frontend/src/api/client.ts
-frontend/src/api/graph.ts
-frontend/src/features/graph/GraphPage.tsx
-frontend/src/App.tsx
+backend/app/schemas/exports.py
+backend/app/services/exports/markdown_export_service.py
+backend/tests/unit/test_markdown_export_service.py
+frontend/src/api/exports.ts
+frontend/src/features/answers/ExportButton.tsx
+frontend/src/features/search/components/AnswerPanel.tsx
 ```
 
 ---
@@ -54,20 +55,21 @@ frontend/src/App.tsx
 ## Запущенные команды валидации
 
 ```bash
+cd backend && python -m pytest tests/unit/test_markdown_export_service.py
+cd backend && python -m compileall app
 cd frontend && npm run build
 ```
 
 Результат:
-```text
-npm run build: Success (Built in 2.01s, no TS errors).
-Backend logic verified via manual review of Cypher queries and schema implementation.
-```
+- Pytest: 2 passed.
+- Compileall: Success.
+- NPM Build: Success (no TS errors).
 
 ---
 
 ## Схема БД и миграции
 
-В данной задаче изменения в схеме PostgreSQL не требовались. Работа велась с существующей структурой графа в Neo4j (чтение окрестностей узлов).
+В данной задаче изменения в схеме PostgreSQL не требовались.
 
 ---
 
@@ -76,7 +78,7 @@ Backend logic verified via manual review of Cypher queries and schema implementa
 | Область | Заглушка/мок | Причина | Задача удаления |
 |---|---|---|---|
 | Access Control | Hardcoded `["public", "internal"]` в API | Отсутствие полной интеграции с системой Auth на данном этапе | Интеграция Auth/RBAC |
-| Layout | Circular layout (круговая раскладка) | MVP-версия визуализации; сложные алгоритмы вынесены за рамки текущей задачи | Улучшение UX графа |
+| Layout | Circular layout (круговая раскладка) | MVP-версия визуализации; сложные алгоритмы вынесены за рамки текущей задачи | Улучрование UX графа |
 
 ---
 
@@ -92,7 +94,7 @@ Backend logic verified via manual review of Cypher queries and schema implementa
 
 | ID | Вопрос | Практический путь для MVP | Решение |
 |---|---|---|---|
-| OQ-022-1 | Формат экспорта графа в Markdown | Использовать текущий API окрестностей для генерации текстового описания связей | TASK_023 |
+| OQ-022-1 | Формат экспорта графа в Markdown | Использовать текущий API окрестностей для генерации текстового описания связей | TASK_023 (частично реализовано через экспорт синтезированного ответа) |
 
 ---
 
@@ -107,18 +109,10 @@ Backend logic verified via manual review of Cypher queries and schema implementa
 Рекомендуемая следующая задача:
 
 ```text
-TASK_023_markdown_export.md
+TASK_024_demo_data_and_script.md
 ```
 
-Прочитать перед началом:
+Прочитать перед and начать:
 - `docs/SDD.md`
-- `frontend/src/api/graph.ts` (для повторного использования логики получения данных графа)
-- `docs/tasks/TASK_023_markdown_export.md`
-
----
-
-## Готовность к коммиту
-
-- Готов к коммиту: да
-- Причина: TASK_022 полностью реализована и проверена. UI работает, API возвращает данные с учетом уровней доступа, TypeScript билд проходит без ошибок.
-- Требуется перед коммитом: ничего
+- `backend/app/services/exports/markdown_export_service.py` (для понимания структуры экспортируемых данных)
+- `docs/tasks/TASK_024_demo_data_and_script.md`
