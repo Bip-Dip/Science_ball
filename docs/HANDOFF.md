@@ -2,7 +2,7 @@
 
 ## Текущий статус
 
-- Текущая задача: `TASK_019_fact_review_api`
+- Текущая задача: `TASK_020_frontend_document_upload`
 - Статус: завершена
 - Последнее обновление: Gemma (Интегратор)
 - Дата обновления: 2026-07-04
@@ -16,39 +16,44 @@
 | TASK_017_search_api_basic | завершена | Базовый API поиска реализован |
 | TASK_018_answer_synthesis_with_evidence | завершена | Синтез ответов на основе evidence реализован |
 | TASK_019_fact_review_api | завершена | API верификации и редактирования фактов реализован |
+| TASK_020_frontend_document_upload | завершена | MVP фронтенда и экран загрузки документов реализованы |
 
 ---
 
 ## Текущее состояние репозитория
 
 ### Реализовано
-- **Fact Review Workflow**: Реализован полный цикл человеческой проверки извлеченных фактов.
-- **Audit Trail**: Создан `AuditLogRepository` для записи всех действий с фактами (верификация, отклонение, комментирование, редактирование).
-- **Versioning**: Реализована система версионирования через `FactVersion`. При редактировании существующего факта его текущее состояние сохраняется в историю перед обновлением.
-- **Review API**:
-    - `GET /api/v1/facts/pending-review`: Список фактов со статусом `machine_extracted` с фильтрацией по документу и confidence.
-    - `POST /api/v1/facts/{id}/verify`: Перевод в статус `expert_verified`.
-    - `POST /api/v1/facts/{id}/reject`: Перевод в статус `rejected` с обязательной причиной.
-    - `POST /api/v1/facts/{id}/comment`: Добавление комментария в аудит-лог без смены статуса.
-    - `PATCH /api/v1/facts/{id}`: Редактирование значений факта + перевод в `expert_verified`.
-- **Service Layer**: `FactReviewService` инкапсулирует логику переходов состояний и запись аудита.
+- **Frontend Shell**: Создан каркас приложения на React + TypeScript + Vite.
+- **Styling**: Интегрирован Tailwind CSS для современного адаптивного интерфейса.
+- **API Client**: Реализован типизированный клиент для взаимодействия с backend (через `.env` и прокси Vite).
+- **Upload Screen**: Создана страница загрузки документов (`UploadPage`) с:
+    - Формой ввода метаданных (Title, Source Type, Access Level, Language, Year).
+    - Интеграцией с `POST /api/v1/documents/upload`.
+    - Обработкой состояний загрузки (Loading), успеха и ошибок.
+    - Валидацией типов файлов (.pdf, .docx, .txt).
+- **Basic Layout**: Реализован основной макет приложения с навигационной панелью.
 
 ### Не реализовано
-- Интеграция с JWT-авторизацией (в роутах используются заглушки для `user_id`).
-- Продвинутый расчет confidence score при экспертной правке.
+- Интеграция с JWT-авторизацией (в API клиенте используется открытый доступ к эндпоинту upload).
+- Страницы поиска и графа знаний (отложены до следующих задач).
 
 ---
 
 ## Изменённые файлы в последней задаче
 
 ```text
-backend/app/repositories/audit_logs.py (New)
-backend/app/repositories/facts.py (Updated)
-backend/app/schemas/facts.py (New)
-backend/app/services/review/fact_review_service.py (New)
-backend/app/api/routes/facts.py (New)
-backend/app/api/router.py (Updated)
-backend/tests/unit/test_fact_review_service.py (New)
+frontend/package.json (New)
+frontend/index.html (New)
+frontend/vite.config.ts (New)
+frontend/tsconfig.json (New)
+frontend/.env.example (New)
+frontend/tailwind.config.cjs (New)
+frontend/postcss.config.cjs (New)
+frontend/src/styles.css (New)
+frontend/src/main.tsx (New)
+frontend/src/App.tsx (New)
+frontend/src/api/client.ts (New)
+frontend/src/features/documents/UploadPage.tsx (New)
 ```
 
 ---
@@ -56,14 +61,14 @@ backend/tests/unit/test_fact_review_service.py (New)
 ## Запущенные команды валидации
 
 ```bash
-cd backend && python -m pytest tests/unit/test_fact_review_service.py
-cd backend && python -m compileall app
+cd frontend && npm install
+cd frontend && npm run build
 ```
 
 Результат:
 ```text
-pytest: 3 passed
-compileall: Успешно (без ошибок)
+npm install: Успешно
+npm run build: Успешно (dist/ generated, 0 TS errors)
 ```
 
 ---
@@ -72,8 +77,8 @@ compileall: Успешно (без ошибок)
 
 | Область | Заглушка/мок | Причина | Задача удаления |
 |---|---|---|---|
-| Auth | `user_id: UUID \| None = None` в роутах | Интеграция с JWT отложена | TASK_XXX (Auth) |
-| LLM | `MockLLMProvider` | Для тестов и локальной разработки без API ключа | По умолчанию в настройках |
+| Auth | Отсутствие токена в API запросах | Интеграция с JWT отложена | TASK_XXX (Auth) |
+| Backend URL | `http://localhost:8000` по умолчанию | Локальная разработка | Конфигурация среды |
 
 ---
 
@@ -81,7 +86,7 @@ compileall: Успешно (без ошибок)
 
 | ID | Проблема | Серьёзность | Обход | Целевая задача |
 |---|---|---|---|---|
-| REV-001 | Отсутствует проверка прав доступа (RBAC) на уровне API для ревьюеров | Средняя | Ожидается внедрение системы ролей | TASK_XXX (Auth/RBAC) |
+| FE-001 | Отсутствует полноценный роутинг (используется статичный рендер UploadPage) | Низкая | Добавить react-router-dom в следующей задаче | TASK_021_frontend_search_and_answer.md |
 
 ---
 
@@ -90,22 +95,23 @@ compileall: Успешно (без ошибок)
 Рекомендуемая следующая задача:
 
 ```text
-TASK_020_frontend_document_upload.md
+TASK_021_frontend_search_and_answer.md
 ```
 
 Прочитать перед началом:
 - `docs/SDD.md`
 - `docs/AI_RULES.md`
 - `docs/HANDOFF.md`
-- `docs/tasks/TASK_020_frontend_document_upload.md`
+- `docs/tasks/TASK_021_frontend_search_and_answer.md`
 
 Что следующая задача должна переиспользовать из этой:
-- API эндпоинты загрузки документов (уже существующие), которые будут связаны с фронтендом.
-- Понимание структуры `documents` и `ingestion_jobs`, так как загрузка файлов запускает весь pipeline, который в итоге создает факты для ревью.
+- API клиент (`frontend/src/api/client.ts`).
+- Базовый макет приложения и стили Tailwind.
+- Конфигурацию прокси в `vite.config.ts`.
 
 ---
 
 ## Готовность к коммиту
 
 - Готов к коммиту: да
-- Причина: TASK_019 полностью реализована, покрыта unit-тестами и проверена на отсутствие ошибок компиляции.
+- Причина: TASK_020 полностью реализована, приложение собирается без ошибок, UI соответствует требованиям MVP.
