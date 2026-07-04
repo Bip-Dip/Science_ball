@@ -2,7 +2,7 @@
 
 ## Текущий статус
 
-- Текущая задача: `TASK_020_frontend_document_upload`
+- Текущая задача: `TASK_021_frontend_search_and_answer`
 - Статус: завершена
 - Последнее обновление: Gemma (Интегратор)
 - Дата обновления: 2026-07-04
@@ -17,43 +17,39 @@
 | TASK_018_answer_synthesis_with_evidence | завершена | Синтез ответов на основе evidence реализован |
 | TASK_019_fact_review_api | завершена | API верификации и редактирования фактов реализован |
 | TASK_020_frontend_document_upload | завершена | MVP фронтенда и экран загрузки документов реализованы |
+| TASK_021_frontend_search_and_answer | завершена | Реализован UI поиска, фильтрации и синтеза ответов |
 
 ---
 
 ## Текущее состояние репозитория
 
 ### Реализовано
-- **Frontend Shell**: Создан каркас приложения на React + TypeScript + Vite.
-- **Styling**: Интегрирован Tailwind CSS для современного адаптивного интерфейса.
-- **API Client**: Реализован типизированный клиент для взаимодействия с backend (через `.env` и прокси Vite).
-- **Upload Screen**: Создана страница загрузки документов (`UploadPage`) с:
-    - Формой ввода метаданных (Title, Source Type, Access Level, Language, Year).
-    - Интеграцией с `POST /api/v1/documents/upload`.
-    - Обработкой состояний загрузки (Loading), успеха и ошибок.
-    - Валидацией типов файлов (.pdf, .docx, .txt).
-- **Basic Layout**: Реализован основной макет приложения с навигационной панелью.
+- **Routing**: Интегрирован `react-router-dom`. Приложение теперь поддерживает переключение между страницами `/documents`, `/search` и `/graph`.
+- **Search Interface**: Создана страница поиска (`SearchPage`) с:
+    - Панелью фильтрации (регион, год начала/конца, порог доверия).
+    - Интеграцией с `POST /api/v1/search` для получения доказательств.
+- **Answer Synthesis UI**: Реализован компонент `AnswerPanel`, который:
+    - Вызывает `POST /api/v1/answers`.
+    - Отображает синтезированный ответ, уровень уверенности (Confidence Badge).
+    - Рендерит таблицу подтверждающих доказательств (Evidence Table).
+    - Визуализирует противоречия и пробелы в знаниях через Alert-боксы.
+- **API Clients**: Очищена структура папок; API клиенты для поиска и ответов перенесены в `frontend/src/api/`.
 
 ### Не реализовано
-- Интеграция с JWT-авторизацией (в API клиенте используется открытый доступ к эндпоинту upload).
-- Страницы поиска и графа знаний (отложены до следующих задач).
+- Интеграция с JWT-авторизацией (в API клиенте по-прежнему используется открытый доступ).
+- Визуализация графа знаний (отложена до следующей задачи).
 
 ---
 
 ## Изменённые файлы в последней задаче
 
 ```text
-frontend/package.json (New)
-frontend/index.html (New)
-frontend/vite.config.ts (New)
-frontend/tsconfig.json (New)
-frontend/.env.example (New)
-frontend/tailwind.config.cjs (New)
-frontend/postcss.config.cjs (New)
-frontend/src/styles.css (New)
-frontend/src/main.tsx (New)
-frontend/src/App.tsx (New)
-frontend/src/api/client.ts (New)
-frontend/src/features/documents/UploadPage.tsx (New)
+frontend/src/App.tsx
+frontend/src/api/search.ts
+frontend/src/api/answers.ts
+frontend/src/features/search/SearchPage.tsx (New)
+frontend/src/features/search/components/SearchResults.tsx (New)
+frontend/src/features/search/components/AnswerPanel.tsx (New)
 ```
 
 ---
@@ -61,14 +57,12 @@ frontend/src/features/documents/UploadPage.tsx (New)
 ## Запущенные команды валидации
 
 ```bash
-cd frontend && npm install
 cd frontend && npm run build
 ```
 
 Результат:
 ```text
-npm install: Успешно
-npm run build: Успешно (dist/ generated, 0 TS errors)
+✓ built in 1.66s (0 TS errors)
 ```
 
 ---
@@ -78,40 +72,33 @@ npm run build: Успешно (dist/ generated, 0 TS errors)
 | Область | Заглушка/мок | Причина | Задача удаления |
 |---|---|---|---|
 | Auth | Отсутствие токена в API запросах | Интеграция с JWT отложена | TASK_XXX (Auth) |
-| Backend URL | `http://localhost:8000` по умолчанию | Локальная разработка | Конфигурация среды |
+| Graph Page | Статичный текст "Coming soon" | Реализация визуализации графа вынесена в отдельную задачу | TASK_022 |
 
 ---
 
 ## Известные проблемы
 
-| ID | Проблема | Серьёзность | Обход | Целевая задача |
-|---|---|---|---|---|
-| FE-001 | Отсутствует полноценный роутинг (используется статичный рендер UploadPage) | Низкая | Добавить react-router-dom в следующей задаче | TASK_021_frontend_search_and_answer.md |
+- **FE-001**: Отсутствует полноценный роутинг $\rightarrow$ РЕШЕНО (введен `react-router-dom`).
+- **FE-002**: Высокая зависимость от доступности backend API для работы Search/Answer страниц.
 
 ---
 
 ## Следующая задача
 
 Рекомендуемая следующая задача:
-
 ```text
-TASK_021_frontend_search_and_answer.md
+TASK_022_frontend_graph_preview.md
 ```
-
-Прочитать перед началом:
-- `docs/SDD.md`
-- `docs/AI_RULES.md`
-- `docs/HANDOFF.md`
-- `docs/tasks/TASK_021_frontend_search_and_answer.md`
 
 Что следующая задача должна переиспользовать из этой:
 - API клиент (`frontend/src/api/client.ts`).
-- Базовый макет приложения и стили Tailwind.
-- Конфигурацию прокси в `vite.config.ts`.
+- Структуру роутинга в `App.tsx` (путь `/graph` уже определен).
+- Общий стиль Tailwind и палитру цветов.
+- Паттерны обработки состояний загрузки и ошибок из `SearchPage`.
 
 ---
 
 ## Готовность к коммиту
 
 - Готов к коммиту: да
-- Причина: TASK_020 полностью реализована, приложение собирается без ошибок, UI соответствует требованиям MVP.
+- Причина: TASK_021 полностью реализована, UI соответствует требованиям SDD по поиску и синтезу ответов, приложение успешно собирается.
