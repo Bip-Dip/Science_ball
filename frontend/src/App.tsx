@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
 import UploadPage from './features/documents/UploadPage';
 import SearchPage from './features/search/SearchPage';
+import GraphPage from './features/graph/GraphPage';
 
 export default function App() {
   return (
@@ -48,15 +49,7 @@ export default function App() {
           <Routes>
             <Route path="/documents" element={<UploadPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route
-              path="/graph"
-              element={
-                <div className="max-w-4xl mx-auto text-center py-20">
-                  <h1 className="text-3xl font-bold text-slate-800 mb-4">Knowledge Graph</h1>
-                  <p className="text-slate-500 italic">Graph visualization is coming soon in TASK_022</p>
-                </div>
-              }
-            />
+            <Route path="/graph" element={<GraphPage />} />
             {/* Default route redirects to search */}
             <Route path="/" element={<SearchPage />} />
           </Routes>

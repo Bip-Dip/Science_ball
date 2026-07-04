@@ -1,0 +1,24 @@
+- completed TASK_022_frontend_graph_preview;
+- implemented behavior: 
+    - Backend: New API endpoint `POST /api/v1/graph/neighborhood` that returns a localized subgraph around a node, respecting `access_level` filters.
+    - Frontend: New `GraphPage` using React Flow for interactive visualization of nodes and edges, including a details panel for metadata.
+- changed files:
+    - `backend/app/schemas/graph.py` (New)
+    - `backend/app/services/graph/graph_query_service.py` (New)
+    - `backend/app/api/routes/graph.py` (New)
+    - `backend/app/api/router.py` (Updated to include graph router)
+    - `frontend/src/api/client.ts` (Updated with generic `post` helper)
+    - `frontend/src/api/graph.ts` (New)
+    - `frontend/src/features/graph/GraphPage.tsx` (New)
+    - `frontend/src/App.tsx` (Updated routing to use GraphPage)
+- validation commands and results:
+    - `cd frontend && npm run build`: Success (Built in 2.01s, no TS errors).
+    - Backend logic verified via schema and service implementation (manual review of Cypher query for access control).
+- runtime/startup notes: No changes to environment variables required; Neo4j driver is used as already configured.
+- stubs/placeholders intentionally left:
+    - Frontend `GraphPage` uses a simple circular layout for MVP instead of an advanced force-directed layout.
+    - User access levels in the API are currently hardcoded to `["public", "internal"]` (placeholder for JWT integration).
+- known issues or blockers: None.
+- exact next task: `TASK_023_markdown_export.md`;
+- what the next task should reuse from this task: 
+    - The Graph API can be used to export the graph structure into Markdown/JSONLD format in the next task.

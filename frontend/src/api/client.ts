@@ -15,3 +15,20 @@ export async function uploadDocument(formData: FormData): Promise<{ document_id:
 
   return response.json();
 }
+
+export async function post<T>(url: string, data: any): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}

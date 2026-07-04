@@ -6,6 +6,7 @@ from app.api.routes.ingestion import router as ingestion_router
 from app.api.routes.search import router as search_router
 from app.api.routes.answers import router as answers_router
 from app.api.routes.facts import router as facts_router
+from app.api.routes.graph import router as graph_router
 
 api_router = APIRouter()
 api_router.include_router(health_router, tags=["health"])
@@ -13,3 +14,5 @@ api_router.include_router(documents_router, prefix="/api/v1")
 api_router.include_router(ingestion_router, prefix="/api/v1")
 api_router.include_router(search_router, prefix="/api/v1")
 api_router.include_router(answers_router, prefix="/api/v1/answers")
+api_router.include_router(facts_router, prefix="/api/v1")
+api_router.include_router(graph_router, prefix="/api/v1")
