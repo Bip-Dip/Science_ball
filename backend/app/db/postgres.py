@@ -20,6 +20,10 @@ def _build_database_url() -> str:
     return settings.database_url
 
 
+def get_db():
+    """Legacy wrapper for get_session_factory to maintain compatibility with older routes."""
+    return get_session_factory()
+
 def get_engine():
     """Return the async SQLAlchemy engine, creating it on first call."""
     global _engine

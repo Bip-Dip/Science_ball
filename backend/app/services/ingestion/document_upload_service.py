@@ -19,7 +19,7 @@ from pathlib import Path
 from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repositories.documents import create_document
+from app.repositories.documents import DocumentsRepository
 from app.schemas.documents import MVP_ALLOWED_EXTENSIONS, DocumentResponse
 from app.settings import settings
 
@@ -96,7 +96,8 @@ async def upload_document(
     )
 
     # Persist metadata in PostgreSQL.
-    document = await create_document(
+    repo = DocumentsRepository()
+    document = await repo.create_document(
         session,
         title=title,
         source_type=source_type,

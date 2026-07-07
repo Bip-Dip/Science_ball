@@ -32,9 +32,15 @@ async def get_minio_client() -> Minio:
     return get_minio()
 
 
+async def get_current_user() -> str:
+    """Return a dummy current user for MVP."""
+    return "mvp_user"
+
+
 async def get_ingestion_service() -> "IngestionJobService":
-    """Provide the IngestionJobService with its required repository."""
+    """Provide the IngestionJobService with with its required repository."""
     from app.repositories.ingestion_jobs import IngestionJobRepository
     from app.services.ingestion.job_service import IngestionJobService
 
     return IngestionJobService(repository=IngestionJobRepository())
+
