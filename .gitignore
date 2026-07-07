@@ -25,6 +25,8 @@ Thumbs.db
 # Project data
 dataset/
 Memory/
+docs/
+docs_on_russia/
 .claude
 
 # Docker volumes (local dev)
